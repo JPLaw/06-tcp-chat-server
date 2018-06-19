@@ -46,6 +46,19 @@ event.on('@users', (data, user) => {
   });
 });
 
+event.on('@dm', (data, user) => {
+  const nickname = data.message.split(' ').shift().trim();
+  const message = data.message.split(' ').splice(1).join(' ').trim();
+  console.log('message: ', message);  
+  Object.keys(socketPool).forEach((userIdKey) => {
+    if (socketPool[userIdKey].nickname === nickname) {
+      const targetedUser = socketPool[userIdKey];
+      targetedUser.socket.write(`${user.nickname}: ${message}\n`);
+      user.socket.write(`>>${user.nickname}<<: ${message}\n`);      
+    }
+  });
+});
+
 server.on('connection', (socket) => {
   const user = new User(socket);
   socket.write(`Welcome to the chatroom, ${user.nickname}!\n`);
